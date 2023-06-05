@@ -1,0 +1,3 @@
+<beans>
+    <bean id="aservice" class="com.minis.test.AServiceImpl"></bean>
+</beans>
