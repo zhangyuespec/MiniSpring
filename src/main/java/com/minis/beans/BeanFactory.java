@@ -1,7 +1,5 @@
 package com.minis.beans;
 
-import com.minis.BeanDefinition;
-
 /**
  * @author yue.zhang5
  * @otherThing BUG FREE PLEASE

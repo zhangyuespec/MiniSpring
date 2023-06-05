@@ -1,4 +1,4 @@
-package com.minis;
+package com.minis.beans;
 
 /**
  * @author yue.zhang5
@@ -6,7 +6,13 @@ package com.minis;
  * @time 2023/6/5-10:42
  **/
 public class BeanDefinition {
+    /**
+     * bean name
+     */
     private String id;
+    /**
+     * class location
+     */
     private String className;
 
     public BeanDefinition(String id, String className) {
