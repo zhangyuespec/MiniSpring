@@ -9,8 +9,8 @@ import com.minis.core.Resource;
  * @otherThing BUG FREE PLEASE
  * @time 2023/6/5-12:10
  **/
-public class ClassPathXmlApplicationContext implements BeanFactory {
-    private BeanFactory beanFactory;
+public class ClassPathXmlApplicationContext implements BeanFactory,ApplicationEventPublisher {
+    private SimpleBeanFactory beanFactory;
     public ClassPathXmlApplicationContext(String fileName) {
         Resource resource = new ClassPathXmlResource(fileName);
         SimpleBeanFactory beanFactory = new SimpleBeanFactory();
@@ -23,7 +23,6 @@ public class ClassPathXmlApplicationContext implements BeanFactory {
         return this.beanFactory.getBean(beanName);
     }
 
-    @Override
     public void registerBean(String beanName, Object obj) {
         this.beanFactory.registerBean(beanName, obj);
     }
@@ -31,5 +30,25 @@ public class ClassPathXmlApplicationContext implements BeanFactory {
     @Override
     public Boolean containsBean(String name) {
         return this.beanFactory.containsBean(name);
+    }
+
+    @Override
+    public Boolean isSingleton(String name) {
+        return null;
+    }
+
+    @Override
+    public Boolean isPrototype(String name) {
+        return null;
+    }
+
+    @Override
+    public Class<?> getType(String name) {
+        return null;
+    }
+
+    @Override
+    public void publishEvent(ApplicationEvent event) {
+
     }
 }

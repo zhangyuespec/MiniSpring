@@ -1,38 +1,116 @@
 package com.minis.beans;
 
+import com.minis.beans.args.ArgumentValues;
+import com.minis.beans.args.PropertyValues;
+
 /**
  * @author yue.zhang5
  * @otherThing BUG FREE PLEASE
  * @time 2023/6/5-10:42
  **/
 public class BeanDefinition {
-    /**
-     * bean name
-     */
+    String SCOPE_SINGLETON = "singleton";
+    String SCOPE_PROTOTYPE = "prototype";
+
+    private boolean lazyInit = false;
+    private String[] dependsOn;
+    private ArgumentValues constructorArgumentValues;
+
+    private PropertyValues propertyValues;
+    private String initMethodName;
+
+    private volatile Object beanClass;
     private String id;
-    /**
-     * class location
-     */
     private String className;
+    private String scope=SCOPE_SINGLETON;
+
+    public String getId() {
+        return id;
+    }
+    public void setId(String id) {
+        this.id = id;
+    }
+    public String getClassName() {
+        return className;
+    }
+    public void setClassName(String className) {
+        this.className = className;
+    }
 
     public BeanDefinition(String id, String className) {
         this.id = id;
         this.className = className;
     }
 
-    public String getClassName() {
-        return className;
+    public boolean hasBeanClass() {
+        return (this.beanClass instanceof Class);
     }
 
-    public void setClassName(String className) {
-        this.className = className;
+    public void setBeanClass(Class<?> beanClass) {
+        this.beanClass = beanClass;
     }
 
-    public String getId() {
-        return id;
+    public Class<?> getBeanClass(){
+
+        return (Class<?>) this.beanClass;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setScope(String scope) {
+        this.scope = scope;
+    }
+
+    public String getScope() {
+        return this.scope;
+    }
+
+    public boolean isSingleton() {
+        return SCOPE_SINGLETON.equals(scope);
+    }
+
+    public boolean isPrototype() {
+        return SCOPE_PROTOTYPE.equals(scope);
+    }
+
+    public void setLazyInit(boolean lazyInit) {
+        this.lazyInit = lazyInit;
+    }
+
+    public boolean isLazyInit() {
+        return this.lazyInit;
+    }
+
+    public void setDependsOn(String... dependsOn) {
+        this.dependsOn = dependsOn;
+    }
+
+    public String[] getDependsOn() {
+        return this.dependsOn;
+    }
+
+    public void setConstructorArgumentValues(ArgumentValues constructorArgumentValues) {
+        this.constructorArgumentValues =
+                (constructorArgumentValues != null ? constructorArgumentValues : new ArgumentValues());
+    }
+
+    public ArgumentValues getConstructorArgumentValues() {
+        return this.constructorArgumentValues;
+    }
+
+    public boolean hasConstructorArgumentValues() {
+        return !this.constructorArgumentValues.isEmpty();
+    }
+    public void setPropertyValues(PropertyValues propertyValues) {
+        this.propertyValues = (propertyValues != null ? propertyValues : new PropertyValues());
+    }
+
+    public PropertyValues getPropertyValues() {
+        return this.propertyValues;
+    }
+    public void setInitMethodName(String initMethodName) {
+        this.initMethodName = initMethodName;
+    }
+
+    public String getInitMethodName() {
+        return this.initMethodName;
     }
 }

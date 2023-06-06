@@ -9,6 +9,8 @@ import com.sun.org.apache.xpath.internal.operations.Bool;
  **/
 public interface BeanFactory {
     Object getBean(String beanName) throws BeansException;
-    void registerBean(String beanName, Object Obj);
     Boolean containsBean(String name);
+    Boolean isSingleton(String name);
+    Boolean isPrototype(String name);
+    Class<?> getType(String name);
 }
