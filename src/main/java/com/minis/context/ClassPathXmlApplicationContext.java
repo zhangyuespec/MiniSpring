@@ -11,12 +11,15 @@ import com.minis.core.Resource;
  **/
 public class ClassPathXmlApplicationContext implements BeanFactory,ApplicationEventPublisher {
     private SimpleBeanFactory beanFactory;
-    public ClassPathXmlApplicationContext(String fileName) {
+    public ClassPathXmlApplicationContext(String fileName, boolean isRefresh) {
         Resource resource = new ClassPathXmlResource(fileName);
         SimpleBeanFactory beanFactory = new SimpleBeanFactory();
         XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(beanFactory);
         reader.loadBeanDefinitions(resource);
         this.beanFactory = beanFactory;
+        if(isRefresh) {
+            this.beanFactory.refresh();
+        }
     }
     @Override
     public Object getBean(String beanName) throws BeansException {

@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DefaultSingletonBeanRegistry implements SingletionBeanResitry{
     protected List<String> beanNames = new ArrayList<>();
     protected Map<String, Object> singletons = new ConcurrentHashMap<>(256);
+    protected Map<String, Object> earlySingletonObjects = new ConcurrentHashMap<>(256);
     @Override
     public void registerSingleton(String beanName, Object singletonObject) {
         synchronized (this.singletons) {
@@ -20,6 +21,7 @@ public class DefaultSingletonBeanRegistry implements SingletionBeanResitry{
             this.beanNames.add(beanName);
         }
     }
+
 
     @Override
     public Object getSingleton(String beanName) {

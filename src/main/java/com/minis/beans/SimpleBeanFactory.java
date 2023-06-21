@@ -24,16 +24,29 @@ public class SimpleBeanFactory extends DefaultSingletonBeanRegistry implements B
     private Map<String, BeanDefinition> beanDefinitionMap = new ConcurrentHashMap<>();
     private List<String> beanDefinitionNames = new LinkedList<>();
 
+    public void refresh() {
+        for(String beanName : beanDefinitionNames) {
+            try {
+                getBean(beanName);
+            } catch (BeansException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     @Override
     public Object getBean(String beanName) throws BeansException {
+        // 尝试从容器中获取bean实例
         Object singleton = this.getSingleton(beanName);
         if(null == singleton) {
-            BeanDefinition beanDefinition = beanDefinitionMap.get(beanName);
-            if(beanDefinition == null) {
-                throw new BeansException("No Bean");
+            // 如果没有实例，则尝试从毛坯实例中获取（毛坯实例就是某些引用未初始化的实例， 为了解决循环引用）
+            singleton = this.earlySingletonObjects.get(beanName);
+            if(singleton == null) {
+                // 如果连毛坯都没有，则创建bean并且注册
+                BeanDefinition beanDefinition = beanDefinitionMap.get(beanName);
+                singleton = createBean(beanDefinition);
+                this.registerSingleton(beanName, singleton);
             }
-            singleton = createBean(beanDefinition);
-            this.registerSingleton(beanName, singleton);
         }
         return singleton;
     }
@@ -45,46 +58,28 @@ public class SimpleBeanFactory extends DefaultSingletonBeanRegistry implements B
      */
     private Object createBean(BeanDefinition beanDefinition) {
         Class<?> clz = null;
-        Object obj = null;
-        Constructor<?> con = null;
-        try {
+        Object obj = doCreateBean(beanDefinition);
+        this.earlySingletonObjects.put(beanDefinition.getId(), obj);
+        try{
             clz = Class.forName(beanDefinition.getClassName());
-            // region 处理构造器
-            ArgumentValues constructorArgumentValues = beanDefinition.getConstructorArgumentValues();
-            // 如果有参数
-            if(!constructorArgumentValues.isEmpty()) {
-                Class<?>[] paramTypes = new Class[constructorArgumentValues.getArgumentCount()];
-                Object[] paramValues = new Object[constructorArgumentValues.getArgumentCount()];
-                for(int i = 0; i < constructorArgumentValues.getArgumentCount(); i++) {
-                    ArgumentValue argumentValue = constructorArgumentValues.getIndexedArgumentValue(i);
-                    if("String".equals(argumentValue.getType())) {
-                        paramTypes[i] = String.class;
-                        paramValues[i] = argumentValue.getValue();
-                    }else if("Integer".equals(argumentValue.getType())) {
-                        paramTypes[i] = Integer.class;
-                        paramValues[i] = Integer.valueOf((String) argumentValue.getValue());
-                    }else if("int".equals(argumentValue.getType())) {
-                        paramTypes[i] = int.class;
-                        paramValues[i] = Integer.valueOf((String)argumentValue.getValue());
-                    }else {
-                        paramTypes[i] = String.class;
-                        paramValues[i] = argumentValue.getValue();
-                    }
-                }
-                try {
-                    con = clz.getConstructor(paramTypes);
-                    obj = con.newInstance(paramValues);
-                }catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }else {
-                obj = clz.newInstance();
-            }
-            // endregion
-        } catch (Exception e) {
+        } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
         // region 处理属性
+        handleProperties(beanDefinition, clz, obj);
+        // endregion
+        return obj;
+    }
+
+    /**
+     * 处理属性注入， 如果注入的是引用类型， 则直接调用getBean方法再次创建bean
+     *
+     * @param beanDefinition
+     * @param clz
+     * @param obj
+     */
+    private void handleProperties(BeanDefinition beanDefinition, Class<?> clz, Object obj) {
+        System.out.println("handle properties for bean:" + beanDefinition.getId());
         PropertyValues propertyValues = beanDefinition.getPropertyValues();
         if(!propertyValues.isEmpty()) {
             for(int i = 0; i < propertyValues.size(); i++) {
@@ -93,18 +88,35 @@ public class SimpleBeanFactory extends DefaultSingletonBeanRegistry implements B
                 String type = propertyValue.getType();
                 String name = propertyValue.getName();
                 Object value = propertyValue.getValue();
+                Boolean isRef = propertyValue.getIsRef();
                 Class<?>[] paramTypes = new Class[1];
-                if("String".equals(type) || "java.lang.String".equals(type)){
-                    paramTypes[0] = String.class;
-                }else if("Integer".equals(type) || "java.lang.Integer".equals(type)) {
-                    paramTypes[0] = Integer.class;
-                }else if("int".equals(type)) {
-                    paramTypes[0] = int.class;
-                }else {
-                    paramTypes[0] = String.class;
-                }
                 Object[] paramValues = new Object[1];
-                paramValues[0] = value;
+                if(!isRef) {
+                    // 不是ref，只是普通属性
+                    if("String".equals(type) || "java.lang.String".equals(type)){
+                        paramTypes[0] = String.class;
+                    }else if("Integer".equals(type) || "java.lang.Integer".equals(type)) {
+                        paramTypes[0] = Integer.class;
+                    }else if("int".equals(type)) {
+                        paramTypes[0] = int.class;
+                    }else {
+                        paramTypes[0] = String.class;
+                    }
+                    paramValues[0] = value;
+                }else {
+                    // 是引用类型
+                    try {
+                        paramTypes[0] = Class.forName(type);
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                    try{
+                        // 再次调用getBean创建ref的bean实例
+                        paramValues[0] = getBean((String) value);
+                    } catch (BeansException e) {
+                        e.printStackTrace();
+                    }
+                }
 
                 // 按照setXxxx的规范查找setter方法
                 String methodName = "set" + name.substring(0, 1).toUpperCase() + name.substring(1);
@@ -121,7 +133,44 @@ public class SimpleBeanFactory extends DefaultSingletonBeanRegistry implements B
                 }
             }
         }
-        // endregion
+    }
+
+    /**
+     * 创建毛坯实例， 仅仅是调用构造， 没有进行属性处理*
+     * @param beanDefinition
+     * @return
+     */
+    private Object doCreateBean(BeanDefinition beanDefinition) {
+        Class<?> clz = null;
+        Object obj = null;
+        Constructor<?> con = null;
+        try {
+            clz = Class.forName(beanDefinition.getClassName());
+            ArgumentValues constructorArgumentValues = beanDefinition.getConstructorArgumentValues();
+            if(!constructorArgumentValues.isEmpty()) {
+                Class<?>[] paramTypes = new Class<?>[constructorArgumentValues.getArgumentCount()];
+                Object[] paramValues = new Object[constructorArgumentValues.getArgumentCount()];
+                for(int i = 0; i < constructorArgumentValues.getArgumentCount(); i++) {
+                    ArgumentValue argumentValue = constructorArgumentValues.getIndexedArgumentValue(i);
+                    if("String".equals(argumentValue.getType()) || "java.lang.String".equals(argumentValue.getType())) {
+                        paramTypes[i] = String.class;
+                        paramValues[i] = argumentValue.getValue();
+                    }else if("Integer".equals(argumentValue.getType()) || "java.lang.Integer".equals(argumentValue.getType())) {
+                        paramTypes[i] = Integer.class;
+                        paramValues[i] = Integer.parseInt((String) argumentValue.getValue());
+                    }else if("int".equals(argumentValue.getType())) {
+                        paramTypes[i] = int.class;
+                        paramValues[i] = Integer.parseInt((String) argumentValue.getValue());
+                    }
+                }
+                con = clz.getConstructor(paramTypes);
+                obj = con.newInstance(paramValues);
+            }else {
+                obj = clz.newInstance();
+            }
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
         return obj;
     }
 

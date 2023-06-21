@@ -10,11 +10,12 @@ import lombok.Data;
 @Data
 public class AServiceImpl implements AService{
     private String name;
-    private int level;
+    private Integer level;
     private String property1;
     private String property2;
+    private BaseService ref1;
     public AServiceImpl(){}
-    public AServiceImpl(String name, int level) {
+    public AServiceImpl(String name, Integer level) {
         this.name = name;
         this.level = level;
         System.out.println(this.name + "," + this.level);
