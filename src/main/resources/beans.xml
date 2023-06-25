@@ -10,6 +10,6 @@
         <property type="com.minis.test.BaseService" name="ref1" ref="baseservice"/>
     </bean>
     <bean id="baseservice" class="com.minis.test.BaseService">
-        <property type="com.minis.test.BaseBaseService" name="baseBaseService" ref="basebaseservice"/>
+<!--        <property type="com.minis.test.BaseBaseService" name="baseBaseService" ref="basebaseservice"/>-->
     </bean>
 </beans>

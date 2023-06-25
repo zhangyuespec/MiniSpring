@@ -1,7 +1,4 @@
-package com.minis.beans;
-
-import com.minis.beans.args.ArgumentValues;
-import com.minis.beans.args.PropertyValues;
+package com.minis.beans.factory.config;
 
 /**
  * @author yue.zhang5
@@ -14,7 +11,7 @@ public class BeanDefinition {
 
     private boolean lazyInit = false;
     private String[] dependsOn;
-    private ArgumentValues constructorArgumentValues;
+    private ConstructorArgumentValues constructorArgumentValues;
 
     private PropertyValues propertyValues;
     private String initMethodName;
@@ -87,12 +84,12 @@ public class BeanDefinition {
         return this.dependsOn;
     }
 
-    public void setConstructorArgumentValues(ArgumentValues constructorArgumentValues) {
+    public void setConstructorArgumentValues(ConstructorArgumentValues constructorArgumentValues) {
         this.constructorArgumentValues =
-                (constructorArgumentValues != null ? constructorArgumentValues : new ArgumentValues());
+                (constructorArgumentValues != null ? constructorArgumentValues : new ConstructorArgumentValues());
     }
 
-    public ArgumentValues getConstructorArgumentValues() {
+    public ConstructorArgumentValues getConstructorArgumentValues() {
         return this.constructorArgumentValues;
     }
 

@@ -1,4 +1,4 @@
-package com.minis.beans.args;
+package com.minis.beans.factory.config;
 
 import lombok.Data;
 

@@ -1,6 +1,6 @@
-package com.minis.beans;
+package com.minis.beans.factory;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
+import com.minis.beans.factory.config.BeansException;
 
 /**
  * @author yue.zhang5
@@ -9,7 +9,7 @@ import com.sun.org.apache.xpath.internal.operations.Bool;
  **/
 public interface BeanFactory {
     Object getBean(String beanName) throws BeansException;
-    Boolean containsBean(String name);
+    Boolean containsBean(String namxe);
     Boolean isSingleton(String name);
     Boolean isPrototype(String name);
     Class<?> getType(String name);

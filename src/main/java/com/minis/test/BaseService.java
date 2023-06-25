@@ -1,5 +1,6 @@
 package com.minis.test;
 
+import com.minis.beans.factory.annotation.Autowired;
 import com.sun.xml.internal.rngom.parse.host.Base;
 import lombok.Data;
 
@@ -10,5 +11,6 @@ import lombok.Data;
  **/
 @Data
 public class BaseService {
+    @Autowired
     private BaseBaseService baseBaseService;
 }

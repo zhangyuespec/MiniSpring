@@ -1,4 +1,6 @@
-package com.minis.beans;
+package com.minis.beans.factory.support;
+
+import com.minis.beans.factory.config.SingletionBeanResitry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @otherThing BUG FREE PLEASE
  * @time 2023/6/5-12:47
  **/
-public class DefaultSingletonBeanRegistry implements SingletionBeanResitry{
+public class DefaultSingletonBeanRegistry implements SingletionBeanResitry {
     protected List<String> beanNames = new ArrayList<>();
     protected Map<String, Object> singletons = new ConcurrentHashMap<>(256);
     protected Map<String, Object> earlySingletonObjects = new ConcurrentHashMap<>(256);

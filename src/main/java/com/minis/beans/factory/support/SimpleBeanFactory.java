@@ -1,17 +1,18 @@
-package com.minis.beans;
+package com.minis.beans.factory.support;
 
-import com.minis.beans.args.ArgumentValue;
-import com.minis.beans.args.ArgumentValues;
-import com.minis.beans.args.PropertyValue;
-import com.minis.beans.args.PropertyValues;
+import com.minis.beans.factory.config.BeanDefinition;
+import com.minis.beans.factory.config.BeansException;
+import com.minis.beans.factory.config.ConstructorArgumentValue;
+import com.minis.beans.factory.config.ConstructorArgumentValues;
+import com.minis.beans.factory.config.PropertyValue;
+import com.minis.beans.factory.config.PropertyValues;
+import com.minis.beans.factory.BeanFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -20,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @otherThing BUG FREE PLEASE
  * @time 2023/6/5-12:03
  **/
-public class SimpleBeanFactory extends DefaultSingletonBeanRegistry implements BeanFactory, BeanDefinitionRegistry{
+public class SimpleBeanFactory extends DefaultSingletonBeanRegistry implements BeanFactory, BeanDefinitionRegistry {
     private Map<String, BeanDefinition> beanDefinitionMap = new ConcurrentHashMap<>();
     private List<String> beanDefinitionNames = new LinkedList<>();
 
@@ -146,21 +147,21 @@ public class SimpleBeanFactory extends DefaultSingletonBeanRegistry implements B
         Constructor<?> con = null;
         try {
             clz = Class.forName(beanDefinition.getClassName());
-            ArgumentValues constructorArgumentValues = beanDefinition.getConstructorArgumentValues();
+            ConstructorArgumentValues constructorArgumentValues = beanDefinition.getConstructorArgumentValues();
             if(!constructorArgumentValues.isEmpty()) {
                 Class<?>[] paramTypes = new Class<?>[constructorArgumentValues.getArgumentCount()];
                 Object[] paramValues = new Object[constructorArgumentValues.getArgumentCount()];
                 for(int i = 0; i < constructorArgumentValues.getArgumentCount(); i++) {
-                    ArgumentValue argumentValue = constructorArgumentValues.getIndexedArgumentValue(i);
-                    if("String".equals(argumentValue.getType()) || "java.lang.String".equals(argumentValue.getType())) {
+                    ConstructorArgumentValue constructorArgumentValue = constructorArgumentValues.getIndexedArgumentValue(i);
+                    if("String".equals(constructorArgumentValue.getType()) || "java.lang.String".equals(constructorArgumentValue.getType())) {
                         paramTypes[i] = String.class;
-                        paramValues[i] = argumentValue.getValue();
-                    }else if("Integer".equals(argumentValue.getType()) || "java.lang.Integer".equals(argumentValue.getType())) {
+                        paramValues[i] = constructorArgumentValue.getValue();
+                    }else if("Integer".equals(constructorArgumentValue.getType()) || "java.lang.Integer".equals(constructorArgumentValue.getType())) {
                         paramTypes[i] = Integer.class;
-                        paramValues[i] = Integer.parseInt((String) argumentValue.getValue());
-                    }else if("int".equals(argumentValue.getType())) {
+                        paramValues[i] = Integer.parseInt((String) constructorArgumentValue.getValue());
+                    }else if("int".equals(constructorArgumentValue.getType())) {
                         paramTypes[i] = int.class;
-                        paramValues[i] = Integer.parseInt((String) argumentValue.getValue());
+                        paramValues[i] = Integer.parseInt((String) constructorArgumentValue.getValue());
                     }
                 }
                 con = clz.getConstructor(paramTypes);
